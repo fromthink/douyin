@@ -94,6 +94,24 @@ class Douyin
         return ['access_token' => $this->accessToken, 'expires_in' => $this->expiresIn];
     }
 
+    public function getTicket(string $accessToken)
+    {
+        $response = $this->getHttpClient()->get('/js/getticket/', [
+            'headers' => [
+                'access-token' => $accessToken,
+            ],
+        ])->getBody()->getContents();
+        $result = json_decode($response, true);
+        if(!$result){
+            throw new InvalidResponseException('invalid response');
+        }
+        $data = $result['data'];
+        if($data['error_code'] != 0){
+            throw new InvalidResponseException($data['description'], $data['error_code']);
+        }
+        return $data['ticket'];
+    }
+
     /**
      * 设置外部接口 AccessToken
      * @param string $accessToken
