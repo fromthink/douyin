@@ -94,6 +94,34 @@ class Douyin
         return ['access_token' => $this->accessToken, 'expires_in' => $this->expiresIn];
     }
 
+    /**
+     * 获取OAuth访问令牌（用户授权）
+     * @param string $code 用户授权码
+     * @return array
+     * @throws InvalidResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getOAuthAccessToken(string $code)
+    {
+        $response = $this->getHttpClient()->post('/oauth/access_token/', [
+            'form_params' => [
+                'client_key' => $this->key,
+                'client_secret' => $this->secret,
+                'code' => $code,
+                'grant_type' => 'authorization_code'
+            ],
+        ])->getBody()->getContents();
+        $result = json_decode($response, true);
+        if (!$result) {
+            throw new InvalidResponseException('invalid response');
+        }
+        $data = $result['data'];
+        if ($data['error_code'] != 0) {
+            throw new InvalidResponseException($data['description'], $data['error_code']);
+        }
+        return $data;
+    }
+
     public function getTicket(string $accessToken)
     {
         $response = $this->getHttpClient()->get('/js/getticket/', [
