@@ -122,6 +122,32 @@ class Douyin
         return $data;
     }
 
+    /**
+     * 获取用户公开信息
+     * @param string $accessToken OAuth访问令牌
+     * @param string $openId 用户唯一标识
+     * @return array
+     * @throws InvalidResponseException
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getUserInfo(string $accessToken, string $openId)
+    {
+        $response = $this->getHttpClient()->post('/oauth/userinfo/', [
+            'json' => [
+                'access_token' => $accessToken,
+                'open_id' => $openId,
+            ],
+        ])->getBody()->getContents();
+        $result = json_decode($response, true);
+        if (!$result) {
+            throw new InvalidResponseException('invalid response');
+        }
+        if ($result['err_no'] != 0) {
+            throw new InvalidResponseException($result['err_msg'], $result['err_no']);
+        }
+        return $result['data'];
+    }
+
     public function getTicket(string $accessToken)
     {
         $response = $this->getHttpClient()->get('/js/getticket/', [
